@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 
 # ========== FILE PATHS ==========
 SIM_JSON_PATH = "patent_similarity.json"   # output from TF-IDF similarity pass
-SRC_XML_PATH = "patent_grant_data.xml"     # output from XML source (Replacing CSV)
+SRC_XML_PATH = "ipg251118.xml"     # output from XML source (Replacing CSV)
 OUT_SUMMARY_CSV = "patent_similarity_summary.csv"  # flat table for inspection (putting this as a failsafe)
 REVIEWERS_JSON = "reviewer_scores.json"    # existing reviewer scores
 EVENTS_OUT = "patent_events.json"          # output file for generated events
