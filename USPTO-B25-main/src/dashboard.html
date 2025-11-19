@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patent Risk Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: "Inter", sans-serif;
+    }
+    .card { 
+      margin: 20px 0; 
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .summary { 
+      font-size: 1.1em; 
+      font-weight: 600; 
+      color: #343a40;
+    }
+    .summary-card {
+      background-color: #ffffff;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .summary-card strong {
+      color: #0d6efd;
+    }
+    .chart-container {
+      background-color: #ffffff;
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      margin-bottom: 1.5rem;
+    }
+    .accordion-button {
+      font-weight: 600;
+    }
+    .accordion-body {
+      background-color: #fdfdff;
+    }
+    .btn-group .btn {
+      margin-right: 5px;
+      border-radius: 0.375rem !important;
+    }
+    h2, h5 {
+      color: #212529;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-4">
+    <h2 class="mb-4">Patent Risk Dashboard</h2>
+    <a href="/risk-summary" class="btn-primary">View Risk Predictions </a>
+    
+    <!-- Summary Stats -->
+    <div class="row">
+      <div class="col-lg-3 col-md-6">
+        <div class="summary-card text-center">
+          <strong>High Risk (0.35+)</strong>
+          <div id="high-risk-percent" class="fs-4 fw-bold text-danger">...</div>
+          <span id="high-risk" class="text-muted">...</span>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="summary-card text-center">
+          <strong>Medium Risk (0.25–0.35)</strong>
+          <div id="medium-risk-percent" class="fs-4 fw-bold text-warning">...</div>
+          <span id="medium-risk" class="text-muted">...</span>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="summary-card text-center">
+          <strong>Low Risk (0.0–0.25)</strong>
+          <div id="low-risk-percent" class="fs-4 fw-bold text-success">...</div>
+          <span id="low-risk" class="text-muted">...</span>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="summary-card text-center">
+          <strong>Total Patents</strong>
+          <div id="total-count" class="fs-4 fw-bold text-primary">...</div>
+          <span class="text-muted">&nbsp;</span> <!-- for alignment -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row mt-3">
+      <div class="col-lg-6">
+        <div class="chart-container">
+          <h5 class="text-center">Risk Score Distribution</h5>
+          <canvas id="riskDistribution" height="200"></canvas>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="chart-container">
+          <h5 class="text-center">Patent Count by TC</h5>
+          <canvas id="tcDistribution" height="200"></canvas>
+          <!-- Removed static percentages as they will be in the chart tooltips -->
+        </div>
+      </div>
+    </div>
+
+    
+    <!-- Filter and Sort Buttons -->
+    <div class="d-flex flex-wrap align-items-center mb-3">
+      <div class="btn-group mb-2 me-3" role="group" aria-label="Risk Filters">
+        <button class="btn btn-outline-danger" onclick="filterPatents('high')">High Risk</button>
+        <button class="btn btn-outline-warning" onclick="filterPatents('medium')">Medium Risk</button>
+        <button class="btn btn-outline-success" onclick="filterPatents('low')">Low Risk</button>
+        <button class="btn btn-outline-secondary active" onclick="filterPatents('all')">Show All</button>
+      </div>
+       <div class="btn-group mb-2" role="group" aria-label="Sort Controls">
+        <button class="btn btn-outline-primary active" onclick="sortPatents('date_desc')">Sort by Date (Newest)</button>
+        <button class="btn btn-outline-primary" onclick="sortPatents('date_asc')">Sort by Date (Oldest)</button>
+        <button class="btn btn-outline-primary" onclick="sortPatents('risk_desc')">Sort by Risk (High-Low)</button>
+        <button class="btn btn-outline-primary" onclick="sortPatents('risk_asc')">Sort by Risk (Low-High)</button>
+      </div>
+    </div>
+    
+   
+    <!-- Individual Patent View -->
+    <div class="mt-4">
+      <h5>Patent Details</h5>
+      <div class="accordion" id="patentAccordion">
+        <!-- Data loaded dynamically via JS -->
+      </div>
+    </div>
+  </div>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Load data from JSON file -->
+  <script>
+    // Global state variables
+    window.allPatents = []; // To store all loaded patents
+    let currentFilter = 'all';
+    let currentSort = 'date_desc'; // Default sort: newest first
+
+    // Chart instances
+    let riskChart, tcChart;
+
+    // Load data from patent_events.json file
+    // Note: This assumes 'patent_events.json' is in the same directory or accessible via this path.
+    // In a real web app, you might pass the data differently.
+    fetch('/data.json')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Store in global variable
+        window.allPatents = data;
+
+        // Initial setup
+        updateSummaryStats(data);
+        createOrUpdateCharts(data);
+        updateDisplay(); // Initial render of the accordion
+      })
+      .catch(err => {
+        console.error("Error loading data:", err);
+        document.getElementById('patentAccordion').innerHTML = `<div class="alert alert-danger"><strong>Error:</strong> Could not load 'patent_events.json'. Please ensure the file is in the correct location.</div>`;
+      });
+
+    function updateSummaryStats(patents) {
+        const high = patents.filter(p => p.composite_risk_score >= 0.35).length;
+        const medium = patents.filter(p => p.composite_risk_score >= 0.25 && p.composite_risk_score < 0.35).length;
+        const low = patents.filter(p => p.composite_risk_score < 0.25).length;
+        const total = patents.length;
+
+        document.getElementById('high-risk').textContent = `${high} patents`;
+        document.getElementById('medium-risk').textContent = `${medium} patents`;
+        document.getElementById('low-risk').textContent = `${low} patents`;
+        document.getElementById('total-count').textContent = total;
+
+        // Update percentages
+        document.getElementById('high-risk-percent').textContent = total > 0 ? `${((high / total) * 100).toFixed(1)}%` : '0%';
+        document.getElementById('medium-risk-percent').textContent = total > 0 ? `${((medium / total) * 100).toFixed(1)}%` : '0%';
+        document.getElementById('low-risk-percent').textContent = total > 0 ? `${((low / total) * 100).toFixed(1)}%` : '0%';
+    }
+
+    function createOrUpdateCharts(patents) {
+        // Risk Distribution Chart
+        const riskScores = patents.map(p => p.composite_risk_score);
+        const riskData = [
+            riskScores.filter(s => s < 0.25).length,
+            riskScores.filter(s => s >= 0.25 && s < 0.35).length,
+            riskScores.filter(s => s >= 0.35).length
+        ];
+        
+        if (riskChart) {
+            riskChart.data.datasets[0].data = riskData;
+            riskChart.update();
+        } else {
+            const ctx1 = document.getElementById('riskDistribution').getContext('2d');
+            riskChart = new Chart(ctx1, {
+              type: 'bar',
+              data: {
+                labels: ['Low (0–0.25)', 'Medium (0.25–0.35)', 'High (0.35+)'],
+                datasets: [{
+                  label: 'Number of Patents',
+                  data: riskData,
+                  backgroundColor: ['#198754', '#ffc107', '#dc3545'],
+                  borderColor: '#ffffff',
+                  borderWidth: 1
+                }]
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: { display: false }
+                },
+                scales: {
+                  y: { beginAtZero: true }
+                }
+              }
+            });
+        }
+
+        // TC Distribution Chart
+        const tcData = {};
+        patents.forEach(p => {
+          const tc = p.TC || "Unknown";
+          if (!tcData[tc]) tcData[tc] = 0;
+          tcData[tc] += 1;
+        });
+
+        if (tcChart) {
+            tcChart.data.labels = Object.keys(tcData);
+            tcChart.data.datasets[0].data = Object.values(tcData);
+            tcChart.update();
+        } else {
+            const ctx2 = document.getElementById('tcDistribution').getContext('2d');
+            tcChart = new Chart(ctx2, {
+              type: 'pie',
+              data: {
+                labels: Object.keys(tcData),
+                datasets: [{
+                  data: Object.values(tcData),
+                  backgroundColor: ['#0d6efd', '#ffc107', '#dc3545', '#6f42c1', '#198754', '#fd7e14', '#0dcaf0', '#20c997', '#d63384', '#6c757d'],
+                  label: 'Patent Count by TC'
+                }]
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: { position: 'bottom' }
+                }
+              }
+            });
+        }
+    }
+      
+    // Function to render accordion items based on filtered data
+    function renderAccordion(patents) {
+      const accordion = document.getElementById('patentAccordion');
+      accordion.innerHTML = ''; // Clear existing
+
+      if (patents.length === 0) {
+        accordion.innerHTML = `<div class="alert alert-info">No patents match the current filters.</div>`;
+        return;
+      }
+
+      patents.forEach((p, index) => {
+        // Fix for potential bad data (missing patent_id)
+        const patentId = p.patent_id || `patent_${index}`;
+        const riskLabel = p.risk_label || "N/A";
+        const riskColor = {
+            'High': 'text-danger',
+            'Medium': 'text-warning',
+            'Low': 'text-success'
+        }[riskLabel] || 'text-dark';
+
+        const item = document.createElement('div');
+        item.className = 'accordion-item';
+        item.innerHTML = `
+          <h2 class="accordion-header" id="heading_${patentId}">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_${patentId}" aria-expanded="false" aria-controls="collapse_${patentId}">
+              ${patentId} - <strong class="${riskColor} ms-2">${riskLabel} Risk</strong>
+              <span class="ms-auto text-muted small">${new Date(p.event_date).toLocaleDateString()}</span>
+            </button>
+          </h2>
+          <div id="collapse_${patentId}" class="accordion-collapse collapse">
+            <div class="accordion-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <p><strong>Domain:</strong> ${p.technology_domain || 'N/A'}</p>
+                  <p><strong>Type:</strong> ${p.patent_type || 'N/A'}</p>
+                  <p><strong>TC:</strong> ${p.TC || 'N/A'}</p>
+                  <p><strong>Event Date:</strong> ${new Date(p.event_date).toLocaleString()}</p>
+                </div>
+                <div class="col-md-6">
+                  <p><strong>Reviewers:</strong> ${p.linked_reviewers ? p.linked_reviewers.join(', ') : 'N/A'}</p>
+                  <p><strong>Composite Risk Score:</strong> <span class="fw-bold ${riskColor}">${p.composite_risk_score}</span></p>
+                  <p><strong>Contribution Breakdown:</strong></p>
+                  <ul>
+                    ${p.reviewer_risk_contributions ? p.reviewer_risk_contributions.map(r => `<li>${r.reviewer_id}: ${r.risk_contribution.toFixed(3)}</li>`).join('') : '<li>No contributions listed</li>'}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        accordion.appendChild(item);
+      });
+    }
+
+    // Central function to update the display based on current state
+    function updateDisplay() {
+        if (!window.allPatents) return;
+
+        let patentsToDisplay = [...window.allPatents];
+
+        // 1. Apply Filter
+        if (currentFilter === 'high') {
+          patentsToDisplay = patentsToDisplay.filter(p => p.composite_risk_score >= 0.35);
+        } else if (currentFilter === 'medium') {
+          patentsToDisplay = patentsToDisplay.filter(p => p.composite_risk_score >= 0.25 && p.composite_risk_score < 0.35);
+        } else if (currentFilter === 'low') {
+          patentsToDisplay = patentsToDisplay.filter(p => p.composite_risk_score < 0.25);
+        }
+        // 'all' does nothing to the filter
+
+        // 2. Apply Sort
+        if (currentSort === 'date_asc') {
+          // Oldest first
+          patentsToDisplay.sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
+        } else if (currentSort === 'date_desc') {
+          // Newest first
+          patentsToDisplay.sort((a, b) => new Date(b.event_date) - new Date(a.event_date));
+        } else if (currentSort === 'risk_desc') {
+          // High-Low
+          patentsToDisplay.sort((a, b) => b.composite_risk_score - a.composite_risk_score);
+        } else if (currentSort === 'risk_asc') {
+          // Low-High
+          patentsToDisplay.sort((a, b) => a.composite_risk_score - b.composite_risk_score);
+        }
+        // 'default' does nothing
+
+        // 3. Render the accordion
+        renderAccordion(patentsToDisplay);
+    }
+
+    // Filter function triggered by buttons
+    function filterPatents(level) {
+      currentFilter = level;
+      updateDisplay();
+
+      // Update active state for filter buttons
+      document.querySelectorAll('[aria-label="Risk Filters"] .btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+    }
+
+    // Sort function triggered by buttons
+    function sortPatents(sortBy) {
+      currentSort = sortBy;
+      updateDisplay();
+
+       // Update active state for sort buttons
+      document.querySelectorAll('[aria-label="Sort Controls"] .btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+    }
+
+  </script>
+</body>
+</html>

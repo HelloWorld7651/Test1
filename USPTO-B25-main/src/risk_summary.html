@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>High-Risk TC & Reviewer Summary</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .card { margin: 20px 0; padding: 15px; font-size: 0.9em; }
+    .summary { font-size: 1.1em; font-weight: bold; }
+    .chart-container { height: 150px; max-height: 150px; overflow: hidden; }
+    .table { font-size: 0.9em; }
+  </style>
+</head>
+<body>
+  <div class="container mt-4">
+    <h2>High-Risk Technology Categories & Reviewers</h2>
+    <p>Summary based on neural network predictions (weighted: mean_pred=70%, pct_high_pred=20%, reviewer_pred=10%)</p>
+    <a href="/" class="btn btn-primary">Back</a>
+
+    <!-- TC Risk by Overall Risk -->
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h5>Top Risk by TC (Overall Risk Score)</h5>
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas id="tcRiskChart" width="100%" height="100%"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Reviewers in Each TC -->
+    <div class="row mt-4">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h5>Top Reviewers in Each TC</h5>
+          </div>
+          <div class="card-body">
+            <table class="table table-striped table-sm">
+              <thead>
+                <tr>
+                  <th>TC</th>
+                  <th>Top Reviewer</th>
+                  <th>Model Risk</th>
+                  <th>Events (n)</th>
+                </tr>
+              </thead>
+              <tbody id="tc-reviewers">
+                <!-- Will be filled dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Overall Reviewers -->
+    <div class="row mt-4">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h5>Top Reviewers (Overall)</h5>
+          </div>
+          <div class="card-body">
+            <table class="table table-striped table-sm">
+              <thead>
+                <tr>
+                  <th>Reviewer</th>
+                  <th>Overall Risk</th>
+                  <th>Events (n)</th>
+                </tr>
+              </thead>
+              <tbody id="overall-reviewers">
+                <!-- Will be filled dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Load risk summary data
+    fetch('/risk-summary-data')
+      .then(res => res.json())
+      .then(data => {
+        const tcData = data.highest_risk_tcs;
+        const topReviewers = data.highest_risk_reviewers;
+
+        // TC Risk Chart (Small, clean, responsive)
+        const tcLabels = tcData.map(tc => tc.TC);
+        const tcRisks = tcData.map(tc => tc.overall_risk);
+
+        const ctx = document.getElementById('tcRiskChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: tcLabels,
+            datasets: [{
+              label: 'Overall Risk Score',
+              data: tcRisks,
+              backgroundColor: ['#ff9800', '#f44336', '#4caf50', '#2196f3', '#9c27b0'],
+              borderColor: '#444',
+              borderWidth: 1,
+              barThickness: 20,
+              maxBarThickness: 20
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: (context) => `${context.dataset.label}: ${context.parsed.y.toFixed(3)}`
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                max: 0.32,
+                grid: { display: false }
+              },
+              x: {
+                grid: { display: false }
+              }
+            }
+          }
+        });
+
+        // ✅ Populate TC Reviewers (show top reviewer per TC)
+        const tbody = document.getElementById('tc-reviewers');
+        tbody.innerHTML = '';
+        tcData.forEach(tc => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${tc.TC}</td>
+            <td>${tc.top_reviewers_in_tc[0]?.reviewer_id || 'N/A'}</td>
+            <td>${tc.top_reviewers_in_tc[0]?.reviewer_overall_model?.toFixed(4) || 'N/A'}</td>
+            <td>${tc.top_reviewers_in_tc[0]?.reviewer_overall_model ? tc.top_reviewers_in_tc[0].reviewer_overall_model.toFixed(4) : 'N/A'}</td>
+          `;
+          tbody.appendChild(row);
+        });
+
+        // ✅ Populate Overall Reviewers
+        const overallTbody = document.getElementById('overall-reviewers');
+        overallTbody.innerHTML = '';
+        topReviewers.forEach(r => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${r.reviewer_id}</td>
+            <td>${r.reviewer_overall.toFixed(4)}</td>
+            <td>${r.decided_based_on.n_events}</td>
+          `;
+          overallTbody.appendChild(row);
+        });
+
+        
+        const ranked = tcData.sort((a, b) => b.overall_risk - a.overall_risk);
+        ranked.forEach((tc, i) => {
+          tc.rank = i + 1;
+        });
+
+        // Optional: Add rank to TC table
+        // You can extend this if you want to show rank
+      })
+      .catch(err => {
+        console.error("Error loading risk summary:", err);
+        document.getElementById('tc-reviewers').innerHTML = '<tr><td colspan="4">Error loading data</td></tr>';
+      });
+  </script>
+</body>
+</html>

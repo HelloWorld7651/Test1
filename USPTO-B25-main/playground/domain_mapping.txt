@@ -1,0 +1,38 @@
+# Format: [Domain] [Keywords] (comma-separated, case-insensitive)
+AI: neural, network, machine-learning, ai, artificial intelligence, deep learning, ml, neural net, model, training, inference, classification, prediction, nlp, reinforcement, vision, transformer
+BIOTECH: dna, gene, protein, enzyme, recombinant, antibody, genome, sequence, cloning, virus, cell, tissue, peptide, molecular, biotech, bio, assay, immunoassay, plasmid
+ELECTRONICS: circuit, chip, transistor, capacitor, resistor, semiconductor, microcontroller, integrated circuit, pcb, electronics, diode, amplifier, signal, sensor, board, current, voltage
+MECHANICAL: gear, shaft, piston, engine, lever, hydraulic, valve, mechanical, torque, bearing, pump, pressure, linkage, actuator, joint, motor, spring, turbine
+CHEMISTRY: chemical, reaction, catalyst, compound, molecule, synthesis, solvent, reagent, polymer, organic, inorganic, chemistry, formulation, purification, mixture, oxidation, reduction
+COMPUTER: software, algorithm, code, programming, database, computing, os, kernel, hardware, cpu, memory, file, storage, firmware, interface, api, compiler, encryption
+SPORTS_EQUIPMENT: glove, golf, basketball, soccer, baseball, tennis, racket, helmet, bat, skate, ski, snowboard, surfboard, gym, treadmill, exercise, sportswear, fitness
+FURNITURE: bed, crib, chair, table, desk, bench, couch, sofa, cabinet, drawer, mirror, counter, shelf, stool, lamp, fixture, dresser, cushion, mattress
+TRANSPORTATION: car, automobile, boat, bike, motorcycle, scooter, sailboat, rowboat, vehicle, windshield, wiper, tire, axle, engine, transmission, aircraft, drone, helicopter, railway, train
+FOOD_PROCESSING: slice, cut, dice, blend, mix, fry, bake, roast, chicken, meat, vegetable, fruit, dough, packaging, food, beverage, processing, fermentation, preservation, flavor
+ENERGY: solar, wind, turbine, photovoltaic, battery, cell, fuel, hydrogen, generator, storage, power, energy, thermal, efficiency, grid, renewable, electricity
+MEDICAL_DEVICES: implant, stent, catheter, syringe, diagnostic, sensor, imaging, mri, x-ray, ultrasound, prosthetic, surgical, instrument, monitor, wearable, medical, therapy
+PHARMACEUTICALS: drug, formulation, compound, dosage, treatment, capsule, tablet, injection, therapeutic, vaccine, delivery, active ingredient, excipient, pharmacology, composition
+MATERIALS: composite, alloy, polymer, ceramic, metal, coating, film, nanomaterial, fabric, textile, fiber, laminate, resin, adhesion, foam, glass, rubber, plastic
+AEROSPACE: aircraft, wing, jet, fuselage, cockpit, avionics, propeller, landing gear, space, rocket, satellite, propulsion, thruster, altitude, aerodynamic, flight
+TELECOMMUNICATIONS: antenna, signal, wireless, modem, 5g, communication, network, transmission, frequency, channel, base station, spectrum, optical, fiber, telecom, satellite
+AUTOMATION: robot, actuator, servo, motor, conveyor, automation, manufacturing, assembly, sensor, control, industrial, factory, arm, manipulator, process, plc
+CONSTRUCTION: concrete, beam, column, frame, foundation, brick, cement, insulation, roofing, flooring, drywall, window, door, scaffolding, structure, masonry
+TEXTILES: fabric, thread, fiber, weave, knit, dye, textile, clothing, apparel, yarn, garment, embroidery, printing, synthetic, natural, nonwoven
+AGRICULTURE: seed, crop, soil, fertilizer, pesticide, irrigation, harvest, planting, greenhouse, livestock, dairy, aquaculture, tractor, plow, farming
+WATER_TREATMENT: filter, membrane, purification, desalination, wastewater, sewage, pump, reservoir, treatment, flow, pressure, valve, chlorine, disinfection
+SECURITY: encryption, authentication, biometrics, access, firewall, intrusion, detection, malware, security, virus, privacy, signature, cryptography, identity
+FINTECH: blockchain, cryptocurrency, transaction, payment, banking, ledger, finance, wallet, token, exchange, credit, account, audit, trading, investment
+EDUCATION: learning, teaching, classroom, e-learning, course, curriculum, assessment, test, exam, training, content, platform, tutor, student
+ENTERTAINMENT: game, video, movie, audio, stream, music, playback, vr, ar, 3d, media, content, display, animation, haptic, controller
+ENVIRONMENTAL: recycling, waste, pollution, carbon, emission, biodegradable, renewable, compost, sustainability, cleanup, remediation, filter, eco, green
+MARINE: hull, anchor, propeller, sonar, buoy, marine, vessel, submarine, navigation, ocean, tide, ballast, deck, keel, sail
+MINING: drill, excavation, ore, mineral, extraction, shaft, conveyor, crusher, slurry, geology, deposit, tunnel, mining, prospection
+TEXT_PROCESSING: natural language, text, document, parsing, sentiment, keyword, search, retrieval, tokenization, corpus, semantic, index, embedding
+IMAGING: pixel, image, sensor, camera, display, optical, lens, focus, capture, color, pattern, contrast, resolution, scan, projection, detection
+OPTICS: laser, mirror, lens, fiber, prism, reflection, diffraction, polarization, optical, light, beam, interferometer, wavelength
+PACKAGING: container, bottle, cap, seal, label, carton, wrap, box, pouch, packaging, dispenser, closure, bag, recyclable
+CLOTHING: shirt, pants, jacket, dress, sleeve, collar, zipper, button, fabric, textile, apparel, footwear, shoe, hat, clothing
+HOME_APPLIANCES: oven, refrigerator, microwave, dishwasher, washing, dryer, appliance, toaster, vacuum, blender, coffee, kettle, heater
+TOYS: doll, toy, puzzle, block, lego, car, train, action figure, board game, child, play, game, interactive, educational
+INSTRUMENTATION: sensor, gauge, meter, calibration, test, signal, measurement, probe, analyzer, spectrometer, detector, instrument, lab
+OTHER:

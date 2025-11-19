@@ -1,0 +1,231 @@
+{
+  "highest_risk_tcs": [
+    {
+      "TC": "2190",
+      "overall_risk": 0.11810915110824265,
+      "decided_based_on": {
+        "mean_predicted_patent_risk": 0.14774490892887115,
+        "pct_high_predicted_patents": 0.0,
+        "reviewer_pred_in_tc": 0.14687716348148952,
+        "weights": {
+          "mean_pred": 0.7,
+          "pct_high_pred": 0.2,
+          "reviewer_pred": 0.1
+        },
+        "n_events": 56
+      },
+      "top_reviewers_in_tc": [
+        {
+          "reviewer_id": "R-17",
+          "reviewer_overall_model": 0.1527419090270996
+        },
+        {
+          "reviewer_id": "R-20",
+          "reviewer_overall_model": 0.15030109882354736
+        },
+        {
+          "reviewer_id": "R-15",
+          "reviewer_overall_model": 0.14947978407144547
+        },
+        {
+          "reviewer_id": "R-08",
+          "reviewer_overall_model": 0.1494466761747996
+        },
+        {
+          "reviewer_id": "R-01",
+          "reviewer_overall_model": 0.1491696983575821
+        }
+      ]
+    },
+    {
+      "TC": "2170",
+      "overall_risk": 0.10875097715323515,
+      "decided_based_on": {
+        "mean_predicted_patent_risk": 0.1360817551612854,
+        "pct_high_predicted_patents": 0.0,
+        "reviewer_pred_in_tc": 0.13493747050219243,
+        "weights": {
+          "mean_pred": 0.7,
+          "pct_high_pred": 0.2,
+          "reviewer_pred": 0.1
+        },
+        "n_events": 48
+      },
+      "top_reviewers_in_tc": [
+        {
+          "reviewer_id": "R-04",
+          "reviewer_overall_model": 0.14239487051963806
+        },
+        {
+          "reviewer_id": "R-14",
+          "reviewer_overall_model": 0.1393776684999466
+        },
+        {
+          "reviewer_id": "R-13",
+          "reviewer_overall_model": 0.13807781537373862
+        },
+        {
+          "reviewer_id": "R-08",
+          "reviewer_overall_model": 0.13791465759277344
+        },
+        {
+          "reviewer_id": "R-09",
+          "reviewer_overall_model": 0.1370496079325676
+        }
+      ]
+    },
+    {
+      "TC": "2400a",
+      "overall_risk": 0.10819214281249553,
+      "decided_based_on": {
+        "mean_predicted_patent_risk": 0.13545329868793488,
+        "pct_high_predicted_patents": 0.0,
+        "reviewer_pred_in_tc": 0.13374832240825005,
+        "weights": {
+          "mean_pred": 0.7,
+          "pct_high_pred": 0.2,
+          "reviewer_pred": 0.1
+        },
+        "n_events": 48
+      },
+      "top_reviewers_in_tc": [
+        {
+          "reviewer_id": "R-20",
+          "reviewer_overall_model": 0.14319873601198196
+        },
+        {
+          "reviewer_id": "R-06",
+          "reviewer_overall_model": 0.13965540130933127
+        },
+        {
+          "reviewer_id": "R-18",
+          "reviewer_overall_model": 0.1387764811515808
+        },
+        {
+          "reviewer_id": "R-14",
+          "reviewer_overall_model": 0.13874571025371552
+        },
+        {
+          "reviewer_id": "R-21",
+          "reviewer_overall_model": 0.1379486471414566
+        }
+      ]
+    },
+    {
+      "TC": "2120",
+      "overall_risk": 0.10812090264784323,
+      "decided_based_on": {
+        "mean_predicted_patent_risk": 0.13530804216861725,
+        "pct_high_predicted_patents": 0.0,
+        "reviewer_pred_in_tc": 0.13405277600159515,
+        "weights": {
+          "mean_pred": 0.7,
+          "pct_high_pred": 0.2,
+          "reviewer_pred": 0.1
+        },
+        "n_events": 59
+      },
+      "top_reviewers_in_tc": [
+        {
+          "reviewer_id": "R-16",
+          "reviewer_overall_model": 0.14205652475357056
+        },
+        {
+          "reviewer_id": "R-08",
+          "reviewer_overall_model": 0.14113284647464752
+        },
+        {
+          "reviewer_id": "R-21",
+          "reviewer_overall_model": 0.14036667346954346
+        },
+        {
+          "reviewer_id": "R-06",
+          "reviewer_overall_model": 0.13876527547836304
+        },
+        {
+          "reviewer_id": "R-13",
+          "reviewer_overall_model": 0.13770258852413722
+        }
+      ]
+    },
+    {
+      "TC": "3620",
+      "overall_risk": 0.10759498387166899,
+      "decided_based_on": {
+        "mean_predicted_patent_risk": 0.13467296957969666,
+        "pct_high_predicted_patents": 0.0,
+        "reviewer_pred_in_tc": 0.13323905165881328,
+        "weights": {
+          "mean_pred": 0.7,
+          "pct_high_pred": 0.2,
+          "reviewer_pred": 0.1
+        },
+        "n_events": 35
+      },
+      "top_reviewers_in_tc": [
+        {
+          "reviewer_id": "R-20",
+          "reviewer_overall_model": 0.13901867469151816
+        },
+        {
+          "reviewer_id": "R-06",
+          "reviewer_overall_model": 0.13830697536468506
+        },
+        {
+          "reviewer_id": "R-13",
+          "reviewer_overall_model": 0.1382409930229187
+        },
+        {
+          "reviewer_id": "R-18",
+          "reviewer_overall_model": 0.13784696658452353
+        },
+        {
+          "reviewer_id": "R-17",
+          "reviewer_overall_model": 0.1371577779452006
+        }
+      ]
+    }
+  ],
+  "highest_risk_reviewers": [
+    {
+      "reviewer_id": "R-04",
+      "reviewer_overall": 0.1379650774154257,
+      "decided_based_on": {
+        "mean_predicted_patent_risk": 0.1379650774154257,
+        "n_events": 47
+      }
+    },
+    {
+      "reviewer_id": "R-20",
+      "reviewer_overall": 0.13634677994542005,
+      "decided_based_on": {
+        "mean_predicted_patent_risk": 0.13634677994542005,
+        "n_events": 41
+      }
+    },
+    {
+      "reviewer_id": "R-16",
+      "reviewer_overall": 0.136078981252817,
+      "decided_based_on": {
+        "mean_predicted_patent_risk": 0.136078981252817,
+        "n_events": 39
+      }
+    },
+    {
+      "reviewer_id": "R-08",
+      "reviewer_overall": 0.13581124799592154,
+      "decided_based_on": {
+        "mean_predicted_patent_risk": 0.13581124799592154,
+        "n_events": 49
+      }
+    },
+    {
+      "reviewer_id": "R-02",
+      "reviewer_overall": 0.13574078095995862,
+      "decided_based_on": {
+        "mean_predicted_patent_risk": 0.13574078095995862,
+        "n_events": 46
+      }
+    }
+  ]
+}
