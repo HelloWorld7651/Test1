@@ -5,10 +5,11 @@ from datetime import datetime, timedelta
 import pandas as pd
 from pathlib import Path
 from statistics import mean
+import xml.etree.ElementTree as ET
 
 # ========== FILE PATHS ==========
 SIM_JSON_PATH = "patent_similarity.json"   # output from TF-IDF similarity pass
-SRC_CSV_PATH = "combined.csv"              # our franken-dataset csv
+SRC_XML_PATH = "patent_grant_data.xml"     # output from XML source (Replacing CSV)
 OUT_SUMMARY_CSV = "patent_similarity_summary.csv"  # flat table for inspection (putting this as a failsafe)
 REVIEWERS_JSON = "reviewer_scores.json"    # existing reviewer scores
 EVENTS_OUT = "patent_events.json"          # output file for generated events
@@ -86,54 +87,77 @@ def load_similarity(sim_json_path=SIM_JSON_PATH):
     with open(sim_json_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
-def load_id_map(csv_path):
+def map_ipc_to_domain(ipc_section):
     """
-    Load and clean the ID mapping DataFrame with tech columns.
-    Returns a DataFrame containing:
-        - 'patent_id' (unique identifier)
-        - 'patent_number_like' (normalized patent number)
-        - 'first_wipo_sector_title' (Wipo sector title, if available)
-        - 'first_wipo_field_title' (Wipo field title, if available)
+    Maps IPC Section chars (A-H) to your specific 'first_wipo_sector_title' keys.
+    Rough mapping based on WIPO standards.
     """
-    # Critical fix: low_memory=False prevents mixed-type slowdowns
-    df = pd.read_csv(csv_path, low_memory=False)
+    mapping = {
+        "A": "Other fields",          # Human Necessities (often Bio/Agri, but generic here)
+        "B": "Mechanical engineering", # Performing Operations; Transporting
+        "C": "Chemistry",             # Chemistry; Metallurgy
+        "D": "Other fields",          # Textiles; Paper
+        "E": "Mechanical engineering", # Fixed Constructions
+        "F": "Mechanical engineering", # Mechanical Engineering; Lighting; Heating
+        "G": "Instruments",           # Physics (Instruments)
+        "H": "Electrical engineering" # Electricity
+    }
+    return mapping.get(ipc_section, "Other fields")
+
+def load_id_map_from_xml(xml_path):
+    """
+    Parses USPTO Patent Grant XML and returns a DataFrame compatible 
+    with the existing logic (patent_id, first_wipo_sector_title, etc.)
+    """
+    rows = []
     
-    # Step 1: Find patent ID column (case-insensitive pattern matching)
-    patent_id_col = None
-    for col in df.columns:
-        if any([word in col.lower() for word in ['patent', 'id', 'pid']]):
-            patent_id_col = col
-            break
-    if patent_id_col is None:
-        raise ValueError("No patent ID column found. Check column names.")
+    # Simple parser for a single XML file or a well-formed tree.
+    # If dealing with concatenated USPTO bulk files (multiple root elements), 
+    # a stream parser would be needed here.
+    try:
+        if not Path(xml_path).exists():
+            print(f"Warning: {xml_path} not found. Returning empty DataFrame.")
+            return pd.DataFrame(columns=['patent_id', 'patent_number_like', 'first_wipo_sector_title', 'first_wipo_field_title', 'actual_claim_count'])
+
+        tree = ET.parse(xml_path)
+        root = tree.getroot()
+        
+        # 1. Extract Patent ID (Doc Number)
+        # Path: us-bibliographic-data-grant -> publication-reference -> document-id -> doc-number
+        pub_ref = root.find(".//publication-reference")
+        doc_id = pub_ref.find(".//document-id/doc-number").text if pub_ref is not None else "UNKNOWN"
+        
+        # 2. Extract IPC Section to determine 'first_wipo_sector_title'
+        # Path: us-bibliographic-data-grant -> classifications-ipcr -> classification-ipcr -> section
+        sector_title = "Other fields" # Default
+        classifications = root.findall(".//classification-ipcr")
+        if classifications:
+            # Take the first classification section found
+            first_sec_elem = classifications[0].find("section")
+            if first_sec_elem is not None:
+                sector_title = map_ipc_to_domain(first_sec_elem.text)
+            
+        # 3. Count Claims
+        claims_element = root.find("claims")
+        claim_count = len(claims_element.findall("claim")) if claims_element is not None else 0
+
+        rows.append({
+            "patent_id": doc_id,
+            "patent_number_like": doc_id, 
+            "first_wipo_sector_title": sector_title,
+            "first_wipo_field_title": "Generated from XML", 
+            "actual_claim_count": claim_count 
+        })
+
+    except ET.ParseError as e:
+        print(f"Failed to parse XML: {e}")
+    except Exception as e:
+        print(f"Error processing XML: {e}")
+
+    df = pd.DataFrame(rows)
     
-    # Step 2: Find patent number column (preferred patterns)
-    patent_number_col = None
-    preferred_patterns = ['patent_number', 'publication_number', 'pub_number', 
-                          'grant_number', 'number', 'patent']
-    for col in preferred_patterns:
-        if col in df.columns:
-            patent_number_col = col
-            break
-    if patent_number_col is None:
-        # Fallback: use first column with 'patent' in name
-        for col in df.columns:
-            if 'patent' in col.lower():
-                patent_number_col = col
-                break
-        if patent_number_col is None:
-            raise ValueError("No patent number column found. Check column names.")
-    
-    new_df = df[[patent_id_col, patent_number_col]]
-    new_df.columns = ['patent_id', 'patent_number_like']
-    
-    if 'first_wipo_sector_title' in df.columns:
-        new_df['first_wipo_sector_title'] = df['first_wipo_sector_title'].astype(str).copy()
-    if 'first_wipo_field_title' in df.columns:
-        new_df['first_wipo_field_title'] = df['first_wipo_field_title'].astype(str).copy() 
-    
-    # Step 5: Drop duplicates (keep first occurrence)
-    return new_df.drop_duplicates(subset=['patent_id'], keep='first')
+    # Drop duplicates (keep first occurrence) if doing multiple files
+    return df.drop_duplicates(subset=['patent_id'], keep='first')
 
 def compute_similarity_averages(sim_data):
     """
@@ -178,7 +202,10 @@ def compute_similarity_averages(sim_data):
 
 def main_build_similarity_summary():
     sim_data = load_similarity(SIM_JSON_PATH)
-    id_map_df = load_id_map(SRC_CSV_PATH)
+    
+    # CHANGED: Load from XML instead of CSV
+    id_map_df = load_id_map_from_xml(SRC_XML_PATH)
+    
     sim_stats, flat_rows = compute_similarity_averages(sim_data)
 
     # Optional: write a tidy CSV for inspection
@@ -248,6 +275,13 @@ def generate_patent_event(reviewer_data, pid):
 
     tech_domain_dict = ID_MAP_DF.set_index('patent_id')['first_wipo_sector_title'].to_dict()
     tech_field_dict = ID_MAP_DF.set_index('patent_id')['first_wipo_field_title'].to_dict()
+    
+    # Check if we have actual claim counts from XML
+    if 'actual_claim_count' in ID_MAP_DF.columns:
+        claim_count_dict = ID_MAP_DF.set_index('patent_id')['actual_claim_count'].to_dict()
+        real_claim_count = claim_count_dict.get(pid, 0)
+    else:
+        real_claim_count = 0
 
     tech_domain = tech_domain_dict.get(pid, None)
     tech_field = tech_field_dict.get(pid, None)
@@ -351,7 +385,10 @@ def generate_patent_event(reviewer_data, pid):
     # Similarity metrics (parsed)
     sim_info = SIM_STATS.get(str(pid), {})
     per_claim_avg = sim_info.get("per_claim_avg", {})
-    total_claims = len(per_claim_avg)
+    
+    # UPDATE: Use XML claim count if available and larger than similarity claim count
+    total_claims = max(len(per_claim_avg), real_claim_count)
+    
     patent_avg = sim_info.get("patent_avg", float("nan"))
 
     # Sort per-claim list by numeric claim number if possible
